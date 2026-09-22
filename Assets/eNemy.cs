@@ -6,6 +6,13 @@ public class eNemy : MonoBehaviour
     public int hp = 3;
     float hitCd;
 
+    private gm gm;
+
+    void Start()
+    {
+        gm = FindObjectOfType<gm>();
+    }
+
     void Update()
     {
         var p = GameObject.Find("player");
@@ -27,8 +34,7 @@ public class eNemy : MonoBehaviour
         {
             if (Time.time < hitCd) return;
             hitCd = Time.time + 0.4f;
-            var g = FindObjectOfType<gm>();
-            if (g != null) g.hitPlayer(7);
+            if (gm != null) gm.hitPlayer(7);
         }
 
         if (other.gameObject.name == "bullet" || other.gameObject.name.Contains("bullet"))
@@ -37,11 +43,7 @@ public class eNemy : MonoBehaviour
             Destroy(other.gameObject);
             if (hp <= 0)
             {
-                // ============================================================
-                // DIAGNOSTIKA DEV2-05 — SKÓRE NENAPOJENÉ (zámerne)
-                // Po opravenej kolízii (DEV2-03) enemy zomrie, ale score
-                // nerastie, kým nezavoláš gm.addScore / napojíš ScoreText.
-                // ============================================================
+                gm.addScore(1);
                 Destroy(gameObject);
             }
         }
@@ -53,8 +55,7 @@ public class eNemy : MonoBehaviour
         {
             if (Time.time < hitCd) return;
             hitCd = Time.time + 0.55f;
-            var g = FindObjectOfType<gm>();
-            if (g != null) g.hitPlayer(3);
+            if (gm != null) gm.hitPlayer(3);
         }
     }
 }

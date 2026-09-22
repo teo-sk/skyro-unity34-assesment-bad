@@ -8,7 +8,6 @@ public class player : MonoBehaviour
     public GameObject prefab;
     public float fireWait = 0.18f;
     float lastShot;
-    float lastDir = 1f;
     public HudStuff hud;
 
     void Start()
@@ -19,18 +18,14 @@ public class player : MonoBehaviour
 
     void Update()
     {
-        // ============================================================
-        // DIAGNOSTIKA DEV2-02 — POHYB CHÝBA (zámerne)
-        // Doplň: Horizontal / Vertical (Input Manager OK na tento task)
-        // alebo Input System. Posuň transform. Pozri README.
-        // ============================================================
-        /*
+        float h = Input.GetAxis("Horizontal");
+        float v = Input.GetAxis("Vertical");
 
-        */
+        transform.position += new Vector3(h, v, 0) * speed * Time.deltaTime;
 
-        // streľba ostáva — overíš, že Play beží, aj keď sa ešte nehýbeš
         if (Input.GetKey(KeyCode.Space))
         {
+            if (hp <= 0) return;
             if (Time.time > lastShot + fireWait)
             {
                 lastShot = Time.time;
@@ -59,34 +54,44 @@ public class player : MonoBehaviour
 
     void shoot()
     {
-        try
+        if (prefab == null)
         {
-            var b = Instantiate(prefab, transform.position, Quaternion.identity);
-            b.transform.parent = null;
+            Debug.LogError("player.prefab is not assigned — drag a bullet prefab in the Inspector");
+            return;
         }
-        catch
+
+        Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        mouseWorld.z = 0f;
+        Vector2 aim = ((Vector2)(mouseWorld - transform.position)).normalized;
+        if (aim.sqrMagnitude < 0.0001f)
+            aim = Vector2.right;
+
+        var b = Instantiate(prefab, transform.position, Quaternion.identity);
+        b.name = "bullet";
+
+        var rb = b.GetComponent<Rigidbody2D>();
+        if (rb == null) rb = b.AddComponent<Rigidbody2D>();
+        rb.gravityScale = 0f;
+        rb.linearVelocity = aim * 12f;
+
+        var col = b.GetComponent<Collider2D>();
+        if (col == null)
         {
-            GameObject b = new GameObject("bullet");
-            b.transform.position = transform.position;
-            b.transform.parent = null;
-            var sr = b.AddComponent<SpriteRenderer>();
-            var my = GetComponent<SpriteRenderer>();
-            if (my != null) sr.sprite = my.sprite;
-            sr.color = new Color(1f, 1f, 0.2f, 1f);
-            sr.sortingOrder = 10;
-            var rb = b.AddComponent<Rigidbody2D>();
-            rb.gravityScale = 0f;
-            rb.linearVelocity = new Vector2(lastDir * 12f, 0f);
-            var col = b.AddComponent<CircleCollider2D>();
+            var circle = b.AddComponent<CircleCollider2D>();
+            circle.isTrigger = true;
+            circle.radius = 0.12f;
+        }
+        else
+        {
             col.isTrigger = true;
-            col.radius = 0.12f;
-            Destroy(b, 1.6f);
         }
+
+        Destroy(b, 1.6f);
     }
 
     void OnCollisionEnter2D(Collision2D c)
     {
-        if (c.gameObject.GetComponent<eNemy>() != null || c.gameObject.GetComponent<eNemy2>() != null)
+        if (c.gameObject.GetComponent<eNemy>() != null)
         {
             hp = hp - 4;
             var g = GameObject.FindObjectOfType<gm>();

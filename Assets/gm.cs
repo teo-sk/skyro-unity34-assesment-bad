@@ -32,8 +32,6 @@ public class gm : MonoBehaviour
 
     void Update()
     {
-        Debug.Log("tutaj"); // zmazať neskôr
-
         if (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.P))
         {
             paused = !paused;
@@ -53,15 +51,11 @@ public class gm : MonoBehaviour
         if (hpTxt != null) hpTxt.text = "hp " + HP;
         else if (hud != null) hud.upd("hp " + HP);
 
-        // DIAGNOSTIKA DEV2-05 — ScoreText sa tu zámerne neaktualizuje.
-        // Po opravenej kolízii + addScore uvidíš zmenu len ak napojíš UI
-        // (addScore už Text nastavuje — alebo doplň sem).
-        // hint: scoreTxt
         if (hud != null) hud.upd("hp " + HP);
-
+        if (scoreTxt != null) scoreTxt.text = "score:" + score;
         if (gameOver)
         {
-            if (hpTxt != null) hpTxt.text = "dead lol  hp 0";
+            if (hpTxt != null) hpTxt.text = "dead lol  hp " + HP;
             return;
         }
 
